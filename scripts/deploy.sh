@@ -20,16 +20,16 @@ CONF="$PROJECT_DIR/dnsmasq-vpn-nftset.conf"
 echo ">>> Generating dnsmasq nftset config..."
 bash "$SCRIPT_DIR/gen-dnsmasq-nftset.sh" "$WHITELISTS_DIR" "$CONF"
 
-# 2. Деплой dnsmasq конфига
+# 2. Деплой dnsmasq конфига (с конвертацией CRLF -> LF)
 echo ">>> Deploying dnsmasq config..."
-ssh "$ROUTER" "cat > /etc/dnsmasq.d/vpn-nftset.conf" < "$CONF"
+ssh "$ROUTER" "cat > /etc/dnsmasq.d/vpn-nftset.conf && sed -i 's/\r//' /etc/dnsmasq.d/vpn-nftset.conf" < "$CONF"
 
-# 3. Деплой CIDR файлов
+# 3. Деплой CIDR файлов (с конвертацией CRLF -> LF)
 for txt in "$WHITELISTS_DIR"/*.txt; do
     [ -f "$txt" ] || continue
     fname="$(basename "$txt")"
     echo ">>> Deploying $fname..."
-    ssh "$ROUTER" "cat > /etc/whitelists/$fname" < "$txt"
+    ssh "$ROUTER" "cat > /etc/whitelists/$fname && sed -i 's/\r//' /etc/whitelists/$fname" < "$txt"
 done
 
 # 4. Перезапуск сервисов

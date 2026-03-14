@@ -1,0 +1,5 @@
+# Force LF line endings for files deployed to Linux router
+*.sh text eol=lf
+*.lst text eol=lf
+*.txt text eol=lf
+*.conf text eol=lf
