@@ -16,8 +16,8 @@ ssh root@192.168.2.1
 ### Как работает маршрутизация
 
 1. dnsmasq резолвит домены из whitelist-файлов и добавляет IP в nft set `vpn_domains` (директива `nftset`)
-2. Статические IP-подсети из `*.txt` добавляются в тот же nft set при старте (`vpn-static-routes`)
-3. Firewall правило `mark_domains`: пакеты к IP из `vpn_domains` → fwmark `0x1`
+2. Статические IP-подсети из `*.txt` добавляются в тот же nft set через hotplug при поднятии awg1
+3. Firewall правила `mark_domains` (LAN) и `mark_domains_output` (роутер): пакеты к IP из `vpn_domains` → fwmark `0x1`
 4. ip rule: `fwmark 0x1 → lookup vpn` (приоритет 100)
 5. Таблица `vpn` (id 99): один маршрут `default dev awg1`
 
@@ -31,7 +31,7 @@ DNS-запрос → dnsmasq (nftset) → IP в vpn_domains
 | Сервис | Назначение |
 |---|---|
 | `dnsmasq` | DNS + DHCP, nftset-директивы из `/etc/dnsmasq.d/vpn-nftset.conf` |
-| `vpn-static-routes` | Добавляет default route в vpn table, CIDR из `*.txt` в nft set, маршруты для DNS |
+| hotplug `99-vpn-routes` | Автоматическая настройка VPN-маршрутов при поднятии/падении awg1 |
 
 ---
 
@@ -52,7 +52,7 @@ DNS-запрос → dnsmasq (nftset) → IP в vpn_domains
 ### Текущие списки
 | Файл | Содержимое |
 |---|---|
-| youtube-google.lst | YouTube, Google |
+| youtube-google.lst | YouTube |
 | instagram-meta.lst | Instagram, Meta CDN |
 | instagram-meta-ips.txt | Meta IP-подсети |
 | misc-blocked.lst | Notion, Signal, BBC, Meduza и др. |
@@ -70,7 +70,8 @@ DNS-запрос → dnsmasq (nftset) → IP в vpn_domains
 | claude-anthropic.lst | Claude/Anthropic |
 | grok-xai.lst | Grok/xAI |
 | linkedin.lst | LinkedIn |
-| cdn-cloud.lst | CDN/облачные |
+| cdn-cloud.lst | Cloudflare DNS |
+| dns-upstream-ips.txt | IP upstream DNS-серверов |
 
 ---
 
@@ -97,7 +98,9 @@ echo "example.com" > whitelists/newservice.lst
 1. Генерирует `dnsmasq-vpn-nftset.conf` из `whitelists/*.lst`
 2. Деплоит его в `/etc/dnsmasq.d/` на роутере
 3. Деплоит `*.txt` (CIDR) в `/etc/whitelists/`
-4. Перезапускает `vpn-static-routes` и `dnsmasq`
+4. Деплоит hotplug-скрипт
+5. Перезапускает dnsmasq и перезагружает VPN-маршруты
+6. Проверяет DNS и nft set (smoke test)
 
 ### Проверить статус на роутере
 ```sh
@@ -119,7 +122,7 @@ ssh root@192.168.2.1 "nslookup telegram.org 127.0.0.1"
 whitelists/          — домены (*.lst) и IP-подсети (*.txt)
 scripts/
   gen-dnsmasq-nftset.sh  — генератор dnsmasq nftset конфига
-  vpn-static-routes.sh   — init-скрипт для роутера
+  99-vpn-routes.sh       — hotplug-скрипт для awg1 (деплоится на роутер)
   deploy.sh              — деплой на роутер
 dnsmasq-vpn-nftset.conf  — сгенерированный dnsmasq конфиг
 docs/                     — документация по миграции
