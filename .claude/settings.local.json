@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:core.telegram.org)",
+      "WebFetch(domain:github.com)",
+      "Read(//c/Users/dkorotkov/.claude//**)",
+      "Read(//c/Users/dkorotkov/.claude/**)",
+      "Bash(ping -c 3 10.2.240.180 2>&1 | head -20)",
+      "Bash(route -n | grep -E \"10\\\\.2\\\\.|default|UG\")",
+      "Bash(ip route:*)",
+      "Bash(ping -n 3 10.2.240.180)",
+      "Bash(route print:*)",
+      "Bash(ipconfig | findstr -A5 \"Ethernet\\\\|WiFi\\\\|Active\")",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName 10.2.240.180 -Port 9000 -WarningAction SilentlyContinue\")",
+      "Bash(ipconfig /all | findstr \"Default Gateway\\\\|IPv4\\\\|DNS\")",
+      "Bash(curl -v http://10.2.240.180:9000/sse 2>&1 | head -50)",
+      "Bash(curl -v http://10.2.240.180:9000 2>&1 | head -50)",
+      "Bash(find ~/.claude/mcp-servers -name \"*.json\" -type f 2>/dev/null | head -10)",
+      "Bash(pkill -f \"curl.*sse\" 2>/dev/null; echo \"Cleaned up curl processes\")",
+      "Bash(find ~/.claude -name \"*mcp*\" -o -name \"*jira*\" 2>/dev/null | head -20)",
+      "Bash(curl -s -H \"Content-Type: application/json\" http://10.2.240.180:9000/sse | head -20)",
+      "Bash(curl -s -X POST http://10.2.240.180:9000/register -H \"Authorization: Bearer Dy1LEzIBbVIfSN506p45gS_uph4n3quOuyGmS2gHiXU\" -H \"Content-Type: application/json\" -d '{}' 2>&1 | head -50)",
+      "Bash(curl -s http://10.2.240.180:9000 2>&1)"
+    ]
+  }
+}

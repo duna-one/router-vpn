@@ -1,0 +1,32 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+USE_PROCD=1
+
+COMBINED=/tmp/dnsr-combined.lst
+COMBINED_IPS=/tmp/dnsr-combined-ips.txt
+
+start_service() {
+    > $COMBINED
+    > $COMBINED_IPS
+    for f in /etc/whitelists/*; do
+        [ -f "$f" ] || continue
+        basename="$(basename "$f")"
+        case "$basename" in
+            \#*) continue ;;
+        esac
+        case "$basename" in
+            *.lst) grep -v '^$' "$f" >> $COMBINED ;;
+            *.txt) grep -v '^$' "$f" >> $COMBINED_IPS ;;
+        esac
+    done
+
+    procd_open_instance
+    procd_set_param command /usr/bin/dnsr --interface awg1 --proxy-list $COMBINED --preset-ips $COMBINED_IPS
+    procd_set_param respawn
+    procd_close_instance
+}
+
+stop_service() {
+    killall dnsr
+}
