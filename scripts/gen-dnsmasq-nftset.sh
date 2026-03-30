@@ -12,7 +12,7 @@ for lst in "$WHITELISTS_DIR"/*.lst; do
     [ -f "$lst" ] || continue
     # Собираем домены в одну nftset-строку
     domains=""
-    while IFS= read -r domain; do
+    while IFS= read -r domain || [ -n "$domain" ]; do
         # Пропускаем пустые строки и комментарии
         [ -z "$domain" ] && continue
         [[ "$domain" == \#* ]] && continue
