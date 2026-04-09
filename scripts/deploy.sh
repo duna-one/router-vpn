@@ -37,15 +37,24 @@ echo ">>> Deploying hotplug script..."
 deploy_file "$SCRIPT_DIR/99-vpn-routes.sh" "/etc/hotplug.d/iface/99-vpn-routes"
 ssh "$ROUTER" "chmod +x /etc/hotplug.d/iface/99-vpn-routes"
 
-# 5. Restart dnsmasq
+# 5. Set default DNS upstream to WAN (non-VPN) resolver
+#    VPN domains use per-domain server= directives (-> 1.1.1.1 through VPN)
+echo ">>> Configuring default DNS upstream (WAN)..."
+ssh "$ROUTER" "uci -q delete dhcp.@dnsmasq[0].server; \
+    uci add_list dhcp.@dnsmasq[0].server='77.88.8.8'; \
+    uci add_list dhcp.@dnsmasq[0].server='77.88.8.1'; \
+    uci set dhcp.@dnsmasq[0].noresolv='1'; \
+    uci commit dhcp"
+
+# 6. Restart dnsmasq
 echo ">>> Restarting dnsmasq..."
 ssh "$ROUTER" "/etc/init.d/dnsmasq restart"
 
-# 6. Trigger hotplug (reload CIDRs into nft set)
+# 7. Trigger hotplug (reload CIDRs into nft set)
 echo ">>> Triggering VPN route reload..."
 ssh "$ROUTER" "ACTION=ifup INTERFACE=awg1 /bin/sh /etc/hotplug.d/iface/99-vpn-routes"
 
-# 7. Smoke test
+# 8. Smoke test
 echo ">>> Running smoke test..."
 if ssh "$ROUTER" "nslookup telegram.org 127.0.0.1 >/dev/null 2>&1"; then
     echo ">>> DNS: OK"
