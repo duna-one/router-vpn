@@ -37,6 +37,11 @@ echo ">>> Deploying hotplug script..."
 deploy_file "$SCRIPT_DIR/99-vpn-routes.sh" "/etc/hotplug.d/iface/99-vpn-routes"
 ssh "$ROUTER" "chmod +x /etc/hotplug.d/iface/99-vpn-routes"
 
+# 4b. Deploy vpn-all toggle helper
+echo ">>> Deploying vpn-all helper..."
+deploy_file "$SCRIPT_DIR/vpn-all.sh" "/usr/bin/vpn-all"
+ssh "$ROUTER" "chmod +x /usr/bin/vpn-all"
+
 # 5. Set default DNS upstream to WAN (non-VPN) resolver
 #    VPN domains use per-domain server= directives (-> 1.1.1.1 through VPN)
 echo ">>> Configuring default DNS upstream (WAN)..."
